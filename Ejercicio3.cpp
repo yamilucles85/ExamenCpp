@@ -1,20 +1,31 @@
 /*
-    Ejercicio
+    Ejercicio #3
 */
+#include <iterator>
 #include <iostream>
+#include <iso646.h>
 
-struct Ejercicio3
+template<typename T>
+concept Interfaz = requires(T obj)
 {
-    Ejercicio3 leer();
-    bool validar(Ejercicio3);
-    void escribir(Ejercicio3);
+    { obj.begin() } -> Leer;
 };
 
-void Method( <concept> valor)
+
+
+
+struct variable
+{
+    variable leer();
+    bool validar(variable);
+    void escribir(variable);
+};
+
+void Method( Interfaz variable)
 {
 
 }
 
-Ejercicio3 leer(){
-    return Ejercicio3;
+variable leer(){
+    return variable;
 }
