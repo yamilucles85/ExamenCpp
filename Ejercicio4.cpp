@@ -37,11 +37,11 @@ std::istream &operator>>(std::istream &in, Persona &persona);
 
 void PersonaMostrar(std::fstream &base_de_datos);
 
-Persona PersonaBuscar(std::fstream &base_de_datos, int32_t &id);
+void PersonaBuscar(std::fstream &base_de_datos, int32_t &id);
 
 void PersonaInsertar(std::fstream &base_de_datos);
 
-Persona PersonaActualizar(std::fstream &base_de_datos, int32_t &id);
+bool PersonaActualizar(std::fstream &base_de_datos, int32_t &id);
 
 bool PersonaBorrar(std::fstream &base_de_datos, int32_t &id);
 
@@ -272,7 +272,7 @@ void PersonaMostrar(std::fstream &base_de_datos) {
     base_de_datos.clear(std::ios::goodbit);
 }
 
-Persona PersonaBuscar(std::fstream &base_de_datos, int32_t &id) {
+void PersonaBuscar(std::fstream &base_de_datos, int32_t &id) {
     base_de_datos.seekg(0, std::ios::end);
     const size_t total_de_bytes = base_de_datos.tellg();
     size_t numero_de_registros = total_de_bytes / sizeof(Persona);
@@ -329,11 +329,9 @@ Persona PersonaBuscar(std::fstream &base_de_datos, int32_t &id) {
 
     std::cout << std::right;
     base_de_datos.clear(std::ios::goodbit);
-
-    return persona;
 }
 
-Persona PersonaActualizar(std::fstream &base_de_datos, int32_t &id) {
+bool PersonaActualizar(std::fstream &base_de_datos, int32_t &id) {
 
     std::fstream archivo_temp;
     std::ios::openmode mode = std::ios::in | std::ios::out | std::ios::binary | std::ios::trunc;
@@ -346,7 +344,7 @@ Persona PersonaActualizar(std::fstream &base_de_datos, int32_t &id) {
 
     if (numero_de_registros == 0) {
         std::cout << "No hay datos registrados.\n";
-        return;
+        return false;
     }
 
     base_de_datos.seekg(0, std::ios::beg);
@@ -407,20 +405,18 @@ Persona PersonaActualizar(std::fstream &base_de_datos, int32_t &id) {
     }
 
     std::ifstream in("temp.bin",
-                     std::ios_base::in | std::ios_base::binary);   // Use binary mode so we can
-    std::ofstream out("Comunidad.bin",                          // handle all kinds of file
-                      std::ios_base::out | std::ios_base::binary); // content.
+                     std::ios_base::in | std::ios_base::binary);
+    std::ofstream out("Comunidad.bin",
+                      std::ios_base::out | std::ios_base::binary);
 
-    // Make sure the streams opened okay...
 
     char buf[BUF_SIZE];
 
     do {
-        in.read(&buf[0], BUF_SIZE);       // Read at most n bytes into
-        out.write(&buf[0], in.gcount());  // buf, then write the buf to
-    } while (in.gcount() > 0);              // the output.
+        in.read(&buf[0], BUF_SIZE);
+        out.write(&buf[0], in.gcount());
+    } while (in.gcount() > 0);
 
-    // Check streams for problems...
 
     in.close();
     out.close();
@@ -429,7 +425,7 @@ Persona PersonaActualizar(std::fstream &base_de_datos, int32_t &id) {
     archivo_temp.clear(std::ios::goodbit);
     base_de_datos.clear(std::ios::goodbit);
 
-    return persona;
+    return true;
 }
 
 bool PersonaBorrar(std::fstream &base_de_datos, int32_t &id) {
@@ -445,7 +441,7 @@ bool PersonaBorrar(std::fstream &base_de_datos, int32_t &id) {
 
     if (numero_de_registros == 0) {
         std::cout << "No hay datos registrados.\n";
-        return;
+        return false;
     }
 
     base_de_datos.seekg(0, std::ios::beg);
@@ -455,26 +451,22 @@ bool PersonaBorrar(std::fstream &base_de_datos, int32_t &id) {
 
     while (numero_de_registros--) {
         base_de_datos.read(reinterpret_cast<char *>(&persona), sizeof(Persona));
-        if (persona.Id == id);
+        if (persona.Id == id) continue;
         archivo_temp.seekp(0, std::ios::end);
         archivo_temp.write(reinterpret_cast<const char *>(&persona), sizeof(Persona));
     }
 
     std::ifstream in("temp.bin",
-                     std::ios_base::in | std::ios_base::binary);   // Use binary mode so we can
-    std::ofstream out("Comunidad.bin",                          // handle all kinds of file
-                      std::ios_base::out | std::ios_base::binary); // content.
-
-    // Make sure the streams opened okay...
+                     std::ios_base::in | std::ios_base::binary);
+    std::ofstream out("Comunidad.bin",
+                      std::ios_base::out | std::ios_base::binary);
 
     char buf[BUF_SIZE];
 
     do {
-        in.read(&buf[0], BUF_SIZE);       // Read at most n bytes into
-        out.write(&buf[0], in.gcount());  // buf, then write the buf to
-    } while (in.gcount() > 0);              // the output.
-
-    // Check streams for problems...
+        in.read(&buf[0], BUF_SIZE);
+        out.write(&buf[0], in.gcount());
+    } while (in.gcount() > 0);
 
     in.close();
     out.close();
