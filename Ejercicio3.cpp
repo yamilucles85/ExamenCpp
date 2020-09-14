@@ -1,15 +1,15 @@
 #include <iostream>
 #include <concepts>
+#include <string>
 
 template<typename T>
-concept concepto = std::is_class<T>::value;
-//        requires(T estructura)
-//{
-//    std:is_struct<estructura>::value;
-////    estructura.leer() -> estructura;
-////    validar(estructura) - > bool;
-////    void escribir(estructura);
-//};
+concept concepto = requires(T variable)
+{
+    { std::is_class<T>::value };
+    { variable.leer() }              -> std::convertible_to<decltype(variable)>;
+    { variable.validar(variable) }   -> std::convertible_to<bool>;
+    { variable.escribir(variable) }  -> std::convertible_to<void>;
+};
 
 struct EstructuraValida
 {
@@ -34,21 +34,46 @@ struct EstructuraValida
 
 struct EstructuraInvalida
 {
-    int32_t number;
+    std::string cadena;
+
+    EstructuraInvalida leer(){
+        EstructuraInvalida estructura_invalida;
+        std::string cadena;
+        std::getline(std::cin, cadena);
+        estructura_invalida.cadena = cadena;
+        return  estructura_invalida;
+    }
+
+    bool validar(EstructuraInvalida estructura_invalida){
+        return estructura_invalida.cadena.size() > 10 ? true : false;
+    }
+
+    // Esta estructura no tiene el método escribir
 };
 
 template<concepto T>
-void metodo(const T&& estructura) {};
+void metodo(const T variable) {};
 
 int32_t main()
 {
+    using namespace std;
+
 //    EstructuraValida estructura_valida;
 //    EstructuraValida estructura_valida_1 = estructura_valida.leer();
-//    std::cout << std::boolalpha << estructura_valida_1.validar(estructura_valida_1) << std::endl;
+//    cout << boolalpha << estructura_valida_1.validar(estructura_valida_1) << endl;
 //    estructura_valida_1.escribir(estructura_valida_1);
 
-    metodo(EstructuraValida);
-    metodo(EstructuraInvalida);
+    EstructuraValida estructura_valida;
+    EstructuraInvalida estructura_invalida;
+    int32_t numero = 8;
+    string cadena = "Cadena";
+
+    metodo(estructura_valida);
+//    metodo(estructura_invalida); // Estructura invalida, lanza error en el compilador
+//    metodo(numero); // El concepto no acepta enteros
+//    metodo(cadena); // Tipo de dato incorrecto es una cadena no una estructura
 
     return EXIT_SUCCESS;
 }
+
+// g++ Ejercicio3.cpp -o Ejercicio3 -std=gnu++20 -fconcepts
